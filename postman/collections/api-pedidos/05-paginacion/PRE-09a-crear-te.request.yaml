@@ -1,0 +1,25 @@
+$kind: http-request
+name: PRE-09a Crear Te
+method: POST
+url: '{{base_url}}/orders'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+body:
+  type: json
+  content: |-
+    {
+      "product": "Te",
+      "quantity": 1
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("PRE-09a crea Te", function () {
+          pm.response.to.have.status(201);
+          pm.expect(pm.response.json().product).to.eql("Te");
+      });

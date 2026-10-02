@@ -1,0 +1,20 @@
+$kind: http-request
+name: TC-05 Sin credenciales
+method: GET
+url: '{{base_url}}/orders'
+order: 1000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-05 responde 401", function () {
+          pm.response.to.have.status(401);
+      });
+
+      pm.test("TC-05 informa que falta el token", function () {
+          const body = pm.response.json();
+          pm.expect(body.error.code).to.eql("UNAUTHORIZED");
+          pm.expect(body.error.details[0].field).to.eql("Authorization");
+          pm.expect(body.error.details[0].issue).to.eql("required");
+          pm.expect(body).to.not.have.property("items");
+      });

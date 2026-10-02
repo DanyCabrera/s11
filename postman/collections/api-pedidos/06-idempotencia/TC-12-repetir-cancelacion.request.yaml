@@ -1,0 +1,24 @@
+$kind: http-request
+name: TC-12 Repetir cancelacion
+method: PUT
+url: '{{base_url}}/orders/{{orderId}}/cancel'
+order: 2000
+headers:
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-12 la repeticion responde 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("TC-12 la respuesta no muestra un segundo efecto", function () {
+          const body = pm.response.json();
+          pm.expect(body.status).to.eql("cancelled");
+          pm.expect(body.cancelledAt).to.eql(pm.collectionVariables.get("cancelledAt"));
+          pm.expect(String(body.events.length)).to.eql(pm.collectionVariables.get("eventCount"));
+          const cancellations = body.events.filter(function (event) { return event.type === "cancelled"; });
+          pm.expect(cancellations).to.have.lengthOf(1);
+      });

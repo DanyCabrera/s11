@@ -1,0 +1,464 @@
+openapi: 3.1.0
+info:
+  title: API de pedidos
+  version: 1.0.0
+  description: |
+    API pequeña para dos usuarios de prueba, Ana y Luis.
+    Cada uno lista, crea y consulta solo sus pedidos.
+    PUT /orders/{id}/cancel es idempotente: repetirla deja el pedido cancelado
+    una sola vez, con el mismo cancelledAt y un solo evento cancelled.
+    POST /orders no es idempotente: cada llamada crea un pedido nuevo.
+    No usa un encabezado Idempotency-Key.
+  summary: Pedidos protegidos, paginados y con cancelación idempotente
+servers:
+  - url: http://localhost:3000
+    description: Servidor local en memoria
+tags:
+  - name: pedidos
+    description: Operaciones de negocio evaluadas
+  - name: pruebas
+    description: Preparación reproducible. No es una operación de negocio.
+paths:
+  /:
+    get:
+      operationId: describeApi
+      summary: Descripción corta de la API
+      description: Ayuda para quien abre el servidor en el navegador. No forma parte de los casos de prueba.
+      security: []
+      responses:
+        "200":
+          description: Nombre de la API
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [name, hint]
+                properties:
+                  name:
+                    type: string
+                  hint:
+                    type: string
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [pedidos]
+      summary: Listar mis pedidos
+      description: Devuelve solo los pedidos del usuario autenticado, en orden de creación, paginados.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Page"
+        - $ref: "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: Página de pedidos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderPage"
+              examples:
+                primeraPagina:
+                  summary: Dos pedidos de tres, página 1
+                  value:
+                    page: 1
+                    limit: 2
+                    total: 3
+                    totalPages: 2
+                    items: []
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      operationId: createOrder
+      tags: [pedidos]
+      summary: Crear un pedido
+      description: |
+        Crea un pedido pendiente para el usuario autenticado.
+        No es idempotente: dos llamadas iguales crean dos pedidos.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrder"
+            examples:
+              valido:
+                summary: Pedido válido
+                value:
+                  product: Cafe
+                  quantity: 2
+                  note: sin azucar
+              sinProducto:
+                summary: Falta el campo obligatorio product
+                value:
+                  quantity: 1
+              cantidadCero:
+                summary: quantity está fuera de rango
+                value:
+                  product: Cafe
+                  quantity: 0
+              cantidadTexto:
+                summary: quantity no es un entero
+                value:
+                  product: Cafe
+                  quantity: dos
+      responses:
+        "201":
+          description: Pedido creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+              examples:
+                creado:
+                  summary: Pedido pendiente de Ana
+                  value:
+                    id: 6b1f3c2a-8d4e-4a1b-9c77-2f0a6d9e1b10
+                    product: Cafe
+                    quantity: 2
+                    note: sin azucar
+                    status: pending
+                    owner: ana
+                    createdAt: "2026-09-29T18:00:00.000Z"
+                    cancelledAt: null
+                    events:
+                      - type: created
+                        at: "2026-09-29T18:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      tags: [pedidos]
+      summary: Consultar un pedido
+      description: |
+        Devuelve el pedido si pertenece al usuario autenticado.
+        Si existe y es de otra persona, responde 403.
+        Si no existe, responde 404.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+      responses:
+        "200":
+          description: Pedido encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /orders/{id}/cancel:
+    put:
+      operationId: cancelOrder
+      tags: [pedidos]
+      summary: Cancelar un pedido
+      description: |
+        Operación idempotente. Establece el estado cancelled.
+        La primera llamada guarda cancelledAt y agrega un evento cancelled.
+        Las siguientes llamadas responden 200 con el mismo recurso:
+        no cambian cancelledAt y no agregan otro evento.
+        El efecto final se comprueba leyendo el pedido otra vez.
+        No depende de un encabezado de idempotencia.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/OrderId"
+      responses:
+        "200":
+          description: Pedido cancelado, o ya estaba cancelado y no cambió
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+              examples:
+                cancelado:
+                  summary: Efecto final de la cancelación
+                  value:
+                    id: 6b1f3c2a-8d4e-4a1b-9c77-2f0a6d9e1b10
+                    product: Cafe
+                    quantity: 2
+                    note: sin azucar
+                    status: cancelled
+                    owner: ana
+                    createdAt: "2026-09-29T18:00:00.000Z"
+                    cancelledAt: "2026-09-29T18:05:00.000Z"
+                    events:
+                      - type: created
+                        at: "2026-09-29T18:00:00.000Z"
+                      - type: cancelled
+                        at: "2026-09-29T18:05:00.000Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /test/reset:
+    post:
+      operationId: resetStore
+      tags: [pruebas]
+      summary: Vaciar los pedidos en memoria
+      description: |
+        Preparación y limpieza de la suite local.
+        Exige un usuario de prueba autenticado.
+        Después de esta llamada el almacén queda vacío, así que la colección
+        no depende de identificadores de una ejecución anterior.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Almacén vacío
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [ok]
+                properties:
+                  ok:
+                    type: boolean
+                    const: true
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        Tokens fijos de la práctica local, no son secretos de un sistema real.
+        Ana: ana-local-token. Luis: luis-local-token.
+  parameters:
+    Page:
+      name: page
+      in: query
+      required: false
+      description: Número de página. Empieza en 1.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Cantidad de pedidos por página. Máximo 20.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 20
+        default: 10
+    OrderId:
+      name: id
+      in: path
+      required: true
+      description: Identificador del pedido devuelto al crearlo.
+      schema:
+        type: string
+        format: uuid
+  responses:
+    ValidationError:
+      description: El cuerpo o los parámetros no cumplen el contrato
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            campoObligatorio:
+              summary: Falta product
+              value:
+                error:
+                  code: VALIDATION_ERROR
+                  message: El cuerpo no cumple el contrato
+                  details:
+                    - field: product
+                      issue: required
+    Unauthorized:
+      description: Falta el token o no corresponde a un usuario de prueba
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            sinToken:
+              summary: Sin encabezado Authorization
+              value:
+                error:
+                  code: UNAUTHORIZED
+                  message: Falta el token Bearer
+                  details:
+                    - field: Authorization
+                      issue: required
+    Forbidden:
+      description: El pedido existe, pero es de otro usuario
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            ajeno:
+              summary: Luis consulta un pedido de Ana
+              value:
+                error:
+                  code: FORBIDDEN
+                  message: El pedido pertenece a otro usuario
+                  details:
+                    - field: id
+                      issue: not_owner
+    NotFound:
+      description: No hay un pedido con ese id
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            inexistente:
+              summary: Id que nadie creó
+              value:
+                error:
+                  code: NOT_FOUND
+                  message: Pedido no encontrado
+                  details:
+                    - field: id
+                      issue: not_found
+  schemas:
+    CreateOrder:
+      type: object
+      additionalProperties: false
+      required: [product, quantity]
+      properties:
+        product:
+          type: string
+          minLength: 1
+          maxLength: 80
+          description: Nombre del producto
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+        note:
+          type: string
+          maxLength: 200
+          description: Nota opcional
+    Order:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - product
+        - quantity
+        - note
+        - status
+        - owner
+        - createdAt
+        - cancelledAt
+        - events
+      properties:
+        id:
+          type: string
+          format: uuid
+        product:
+          type: string
+          minLength: 1
+          maxLength: 80
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+        note:
+          type: string
+          maxLength: 200
+        status:
+          type: string
+          enum: [pending, cancelled]
+        owner:
+          type: string
+          enum: [ana, luis]
+        createdAt:
+          type: string
+          format: date-time
+        cancelledAt:
+          type: [string, "null"]
+          format: date-time
+        events:
+          type: array
+          description: Historial del pedido. Una cancelación repetida no agrega otro evento cancelled.
+          items:
+            $ref: "#/components/schemas/OrderEvent"
+    OrderEvent:
+      type: object
+      additionalProperties: false
+      required: [type, at]
+      properties:
+        type:
+          type: string
+          enum: [created, cancelled]
+        at:
+          type: string
+          format: date-time
+    OrderPage:
+      type: object
+      additionalProperties: false
+      required: [page, limit, total, totalPages, items]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 20
+        total:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          $ref: "#/components/schemas/ErrorObject"
+    ErrorObject:
+      type: object
+      additionalProperties: false
+      required: [code, message, details]
+      properties:
+        code:
+          type: string
+          enum: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, INTERNAL]
+        message:
+          type: string
+          minLength: 1
+        details:
+          type: array
+          items:
+            $ref: "#/components/schemas/ErrorDetail"
+    ErrorDetail:
+      type: object
+      additionalProperties: false
+      required: [field, issue]
+      properties:
+        field:
+          type: string
+          minLength: 1
+        issue:
+          type: string
+          minLength: 1

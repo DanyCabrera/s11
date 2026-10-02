@@ -1,0 +1,144 @@
+No authorization data found. Please use the `postman login` command.
+Refer:https://learning.postman.com/docs/postman-cli/postman-cli-options/#postman-login
+
+Running your collection...
+
+Root 009d36c3e04a00c8c133563c
+
+  POST http://localhost:3000/test/reset [200 OK, 187 B, 22 ms]
+  Pass  Preparacion responde 200
+  Pass  Preparacion deja el almacen vacio
+
+Root e515bd875a10cf9e75763814
+
+  POST http://localhost:3000/orders [201 Created, 429 B, 5 ms]
+  Pass  TC-01 responde 201
+  Pass  TC-01 guarda el id de esta corrida
+  Pass  TC-01 crea el pedido de Ana
+
+Root 9271b30ca5ca408ac3695e59
+
+  GET http://localhost:3000/orders/c13a9d0a-78ee-45eb-b972-c1c8b2010e4d [200 OK, 424 B, 2 ms]
+  Pass  TC-02 responde 200
+  Pass  TC-02 el cambio quedo guardado
+
+Root 44ee67210e4e462dbf81fdc5
+
+  GET http://localhost:3000/orders?page=1&limit=10 [200 OK, 481 B, 2 ms]
+  Pass  TC-13 responde 200 y JSON
+  Pass  TC-13 la pagina cumple el esquema OrderPage
+  Pass  TC-13 cada pedido cumple el esquema Order
+
+Root 25b996e2759c3439c6d897f6
+
+  POST http://localhost:3000/orders [400 Bad Request, 317 B, 1 ms]
+  Pass  TC-03 responde 400
+  Pass  TC-03 rechaza la falta de product
+  GET http://localhost:3000/orders?page=1&limit=10 [200 OK, 481 B, 2 ms]
+  Pass  TC-03 no guarda un pedido
+
+Root dd901da955a5fdb517363208
+
+  POST http://localhost:3000/orders [400 Bad Request, 335 B, 2 ms]
+  Pass  TC-04 responde 400
+  Pass  TC-04 rechaza quantity fuera de rango
+  GET http://localhost:3000/orders?page=1&limit=10 [200 OK, 481 B, 1 ms]
+  Pass  TC-04 no guarda un pedido
+
+Root 87528f39da20c0b703de4ee9
+
+  POST http://localhost:3000/orders [400 Bad Request, 325 B, 3 ms]
+  Pass  TC-14 responde 400 y JSON
+  Pass  TC-14 el error cumple el esquema ErrorResponse
+  GET http://localhost:3000/orders?page=1&limit=10 [200 OK, 481 B, 2 ms]
+  Pass  TC-14 no guarda un pedido
+
+Root f15ad82051def31162b4527d
+
+  GET http://localhost:3000/orders [401 Unauthorized, 310 B, 1 ms]
+  Pass  TC-05 responde 401
+  Pass  TC-05 informa que falta el token
+
+Root 8ab90d52bd602b75dc23e1dc
+
+  GET http://localhost:3000/orders [401 Unauthorized, 303 B, 1 ms]
+  Pass  TC-06 responde 401
+  Pass  TC-06 rechaza el token desconocido
+
+Root 585c5fcdd41e6c89059e1e6a
+
+  GET http://localhost:3000/orders/c13a9d0a-78ee-45eb-b972-c1c8b2010e4d [403 Forbidden, 307 B, 1 ms]
+  Pass  TC-07 responde 403
+  Pass  TC-07 no entrega el pedido de Ana
+
+Root 214a88357fe81291d792b3ee
+
+  GET http://localhost:3000/orders/00000000-0000-4000-8000-000000000099 [404 Not Found, 293 B, 1 ms]
+  Pass  TC-08 responde 404
+  Pass  TC-08 informa que el pedido no existe
+
+Root 6a850cd542468fd1eba63e69
+
+  POST http://localhost:3000/orders [201 Created, 417 B, 1 ms]
+  Pass  PRE-09a crea Te
+
+Root 4b40dadb20e775ca7e08cbfb
+
+  POST http://localhost:3000/orders [201 Created, 419 B, 1 ms]
+  Pass  PRE-09b crea Jugo
+
+Root 9caa54a22b62c4d505ea0386
+
+  GET http://localhost:3000/orders?page=1&limit=2 [200 OK, 717 B, 1 ms]
+  Pass  TC-09 responde 200
+  Pass  TC-09 devuelve los dos primeros pedidos
+
+Root ff3693b7a5899d258f1ef5d9
+
+  GET http://localhost:3000/orders?page=2&limit=2 [200 OK, 470 B, 975 us]
+  Pass  TC-10 responde 200
+  Pass  TC-10 devuelve el pedido restante y no repite la pagina 1
+
+Root 76230cb7772639dbf8a5c1ef
+
+  PUT http://localhost:3000/orders/c13a9d0a-78ee-45eb-b972-c1c8b2010e4d/cancel [200 OK, 501 B, 1 ms]
+  Pass  TC-11 responde 200
+  Pass  TC-11 cambia el pedido a cancelled una sola vez
+
+Root 9cf849a7e16d53e6a2a5d6fa
+
+  PUT http://localhost:3000/orders/c13a9d0a-78ee-45eb-b972-c1c8b2010e4d/cancel [200 OK, 501 B, 1 ms]
+  Pass  TC-12 la repeticion responde 200
+  Pass  TC-12 la respuesta no muestra un segundo efecto
+
+Root 61904f52fc02cc91a17ce01d
+
+  GET http://localhost:3000/orders/c13a9d0a-78ee-45eb-b972-c1c8b2010e4d [200 OK, 501 B, 1 ms]
+  Pass  TC-12 el pedido guardado sigue igual
+
+Root ceee7eab31f6b86ed9734fa4
+
+  POST http://localhost:3000/test/reset [200 OK, 187 B, 972 us]
+  Pass  Limpieza responde 200
+  GET http://localhost:3000/orders?page=1&limit=10 [200 OK, 233 B, 973 us]
+  Pass  Limpieza deja cero pedidos
+
+---------------------------------------------------------------------
+|                         |           executed |             failed |
+--------------------------+--------------------+---------------------
+|              iterations |                  1 |                  0 |
+--------------------------+--------------------+---------------------
+|                requests |                 19 |                  0 |
+--------------------------+--------------------+---------------------
+|            test-scripts |                 19 |                  0 |
+--------------------------+--------------------+---------------------
+|      prerequest-scripts |                  0 |                  0 |
+--------------------------+--------------------+---------------------
+|              assertions |                 40 |                  0 |
+---------------------------------------------------------------------
+| total run duration: 1191 ms                                       |
+---------------------------------------------------------------------
+| total data received: 4.44 KB (approx)                             |
+---------------------------------------------------------------------
+| average response time: 2 ms [min: 973 us, max: 22 ms, s.d.: 4 ms] |
+---------------------------------------------------------------------

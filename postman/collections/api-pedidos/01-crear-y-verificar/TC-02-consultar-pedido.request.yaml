@@ -1,0 +1,28 @@
+$kind: http-request
+name: TC-02 Consultar pedido creado
+method: GET
+url: '{{base_url}}/orders/{{orderId}}'
+order: 2000
+headers:
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-02 responde 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("TC-02 el cambio quedo guardado", function () {
+          const body = pm.response.json();
+          pm.expect(body.id).to.eql(pm.collectionVariables.get("orderId"));
+          pm.expect(body.product).to.eql("Cafe");
+          pm.expect(body.quantity).to.eql(2);
+          pm.expect(body.note).to.eql("sin azucar");
+          pm.expect(body.status).to.eql("pending");
+          pm.expect(body.owner).to.eql("ana");
+          pm.expect(body.cancelledAt).to.eql(null);
+          pm.expect(body.events).to.be.an("array").with.lengthOf(1);
+          pm.expect(body.events[0].type).to.eql("created");
+      });

@@ -1,0 +1,41 @@
+$kind: http-request
+name: TC-01 Crear pedido valido
+method: POST
+url: '{{base_url}}/orders'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+body:
+  type: json
+  content: |-
+    {
+      "product": "Cafe",
+      "quantity": 2,
+      "note": "sin azucar"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-01 responde 201", function () {
+          pm.response.to.have.status(201);
+      });
+
+      pm.test("TC-01 guarda el id de esta corrida", function () {
+          const body = pm.response.json();
+          pm.expect(body.id).to.be.a("string").and.not.empty;
+          pm.collectionVariables.set("orderId", body.id);
+      });
+
+      pm.test("TC-01 crea el pedido de Ana", function () {
+          const body = pm.response.json();
+          pm.expect(body.product).to.eql("Cafe");
+          pm.expect(body.quantity).to.eql(2);
+          pm.expect(body.note).to.eql("sin azucar");
+          pm.expect(body.status).to.eql("pending");
+          pm.expect(body.owner).to.eql("ana");
+          pm.expect(body.cancelledAt).to.eql(null);
+      });

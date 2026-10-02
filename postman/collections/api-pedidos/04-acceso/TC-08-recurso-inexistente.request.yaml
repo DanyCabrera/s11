@@ -1,0 +1,23 @@
+$kind: http-request
+name: TC-08 Recurso inexistente
+method: GET
+url: '{{base_url}}/orders/00000000-0000-4000-8000-000000000099'
+order: 2000
+headers:
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-08 responde 404", function () {
+          pm.response.to.have.status(404);
+      });
+
+      pm.test("TC-08 informa que el pedido no existe", function () {
+          const body = pm.response.json();
+          pm.expect(body.error.code).to.eql("NOT_FOUND");
+          pm.expect(body.error.details[0].field).to.eql("id");
+          pm.expect(body.error.details[0].issue).to.eql("not_found");
+          pm.expect(body).to.not.have.property("product");
+      });

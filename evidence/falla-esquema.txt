@@ -1,0 +1,166 @@
+No authorization data found. Please use the `postman login` command.
+Refer:https://learning.postman.com/docs/postman-cli/postman-cli-options/#postman-login
+
+Running your collection...
+
+Root 469b274bc4099d341dec1070
+
+  POST http://localhost:3000/test/reset [200 OK, 187 B, 22 ms]
+  Pass  Preparacion responde 200
+  Pass  Preparacion deja el almacen vacio
+
+Root eda527642e6dd4fc2846bda8
+
+  POST http://localhost:3000/orders [201 Created, 424 B, 6 ms]
+  Pass  TC-01 responde 201
+  Pass  TC-01 guarda el id de esta corrida
+  1. TC-01 crea el pedido de Ana
+
+Root fc30430f07d3f5c1ae13252c
+
+  GET http://localhost:3000/orders/f957798f-aeb1-45f8-88f6-cefd79d929f3 [200 OK, 419 B, 1 ms]
+  Pass  TC-02 responde 200
+  2. TC-02 el cambio quedo guardado
+
+Root f87ede9118003b634cbfd3d6
+
+  GET http://localhost:3000/orders?page=1&limit=10 [200 OK, 476 B, 3 ms]
+  Pass  TC-13 responde 200 y JSON
+  Pass  TC-13 la pagina cumple el esquema OrderPage
+  3. TC-13 cada pedido cumple el esquema Order
+
+Root 784e5c9084ea923bd26f80c0
+
+  POST http://localhost:3000/orders [400 Bad Request, 317 B, 3 ms]
+  Pass  TC-03 responde 400
+  Pass  TC-03 rechaza la falta de product
+  GET http://localhost:3000/orders?page=1&limit=10 [200 OK, 476 B, 2 ms]
+  Pass  TC-03 no guarda un pedido
+
+Root 03fba833fda59de3bcd6b625
+
+  POST http://localhost:3000/orders [400 Bad Request, 335 B, 2 ms]
+  Pass  TC-04 responde 400
+  Pass  TC-04 rechaza quantity fuera de rango
+  GET http://localhost:3000/orders?page=1&limit=10 [200 OK, 476 B, 2 ms]
+  Pass  TC-04 no guarda un pedido
+
+Root 7c2bd61fd434fa2aecc6b045
+
+  POST http://localhost:3000/orders [400 Bad Request, 325 B, 5 ms]
+  Pass  TC-14 responde 400 y JSON
+  Pass  TC-14 el error cumple el esquema ErrorResponse
+  GET http://localhost:3000/orders?page=1&limit=10 [200 OK, 476 B, 2 ms]
+  Pass  TC-14 no guarda un pedido
+
+Root 2cb3f02967c031edbfe0f0c6
+
+  GET http://localhost:3000/orders [401 Unauthorized, 310 B, 1 ms]
+  Pass  TC-05 responde 401
+  Pass  TC-05 informa que falta el token
+
+Root 6662b0d085bb75ec87356c27
+
+  GET http://localhost:3000/orders [401 Unauthorized, 303 B, 2 ms]
+  Pass  TC-06 responde 401
+  Pass  TC-06 rechaza el token desconocido
+
+Root 61a2cabe902eed5e228deaa8
+
+  GET http://localhost:3000/orders/f957798f-aeb1-45f8-88f6-cefd79d929f3 [403 Forbidden, 307 B, 1 ms]
+  Pass  TC-07 responde 403
+  Pass  TC-07 no entrega el pedido de Ana
+
+Root cf0ea0fde54c135b72aae21d
+
+  GET http://localhost:3000/orders/00000000-0000-4000-8000-000000000099 [404 Not Found, 293 B, 2 ms]
+  Pass  TC-08 responde 404
+  Pass  TC-08 informa que el pedido no existe
+
+Root 822281aa0174a5a3ad3b2ec5
+
+  POST http://localhost:3000/orders [201 Created, 412 B, 1 ms]
+  Pass  PRE-09a crea Te
+
+Root d23af79ce465927538ed3442
+
+  POST http://localhost:3000/orders [201 Created, 414 B, 1 ms]
+  Pass  PRE-09b crea Jugo
+
+Root c359b07be9edb76b48c84a08
+
+  GET http://localhost:3000/orders?page=1&limit=2 [200 OK, 707 B, 1 ms]
+  Pass  TC-09 responde 200
+  Pass  TC-09 devuelve los dos primeros pedidos
+
+Root 21333dcdd1f178f1dd32732e
+
+  GET http://localhost:3000/orders?page=2&limit=2 [200 OK, 465 B, 1 ms]
+  Pass  TC-10 responde 200
+  Pass  TC-10 devuelve el pedido restante y no repite la pagina 1
+
+Root 41b98d14d7f8743b879b2afd
+
+  PUT http://localhost:3000/orders/f957798f-aeb1-45f8-88f6-cefd79d929f3/cancel [200 OK, 496 B, 1 ms]
+  Pass  TC-11 responde 200
+  Pass  TC-11 cambia el pedido a cancelled una sola vez
+
+Root 8a0e703cc2f4ea6d3e7026da
+
+  PUT http://localhost:3000/orders/f957798f-aeb1-45f8-88f6-cefd79d929f3/cancel [200 OK, 496 B, 1 ms]
+  Pass  TC-12 la repeticion responde 200
+  Pass  TC-12 la respuesta no muestra un segundo efecto
+
+Root 763c571512d13ac39f5d15fd
+
+  GET http://localhost:3000/orders/f957798f-aeb1-45f8-88f6-cefd79d929f3 [200 OK, 496 B, 1 ms]
+  4. TC-12 el pedido guardado sigue igual
+
+Root f062e609dcb04a4a6f2555dc
+
+  POST http://localhost:3000/test/reset [200 OK, 187 B, 1 ms]
+  Pass  Limpieza responde 200
+  GET http://localhost:3000/orders?page=1&limit=10 [200 OK, 233 B, 1 ms]
+  Pass  Limpieza deja cero pedidos
+
+-------------------------------------------------------------------
+|                         |          executed |            failed |
+--------------------------+-------------------+--------------------
+|              iterations |                 1 |                 0 |
+--------------------------+-------------------+--------------------
+|                requests |                19 |                 0 |
+--------------------------+-------------------+--------------------
+|            test-scripts |                19 |                 0 |
+--------------------------+-------------------+--------------------
+|      prerequest-scripts |                 0 |                 0 |
+--------------------------+-------------------+--------------------
+|              assertions |                40 |                 4 |
+-------------------------------------------------------------------
+| total run duration: 1245 ms                                     |
+-------------------------------------------------------------------
+| total data received: 4.37 KB (approx)                           |
+-------------------------------------------------------------------
+| average response time: 3 ms [min: 1 ms, max: 22 ms, s.d.: 4 ms] |
+-------------------------------------------------------------------
+
+  #  failure         detail                                                                                                                          
+                                                                                                                                                     
+ 1.  AssertionError  TC-01 crea el pedido de Ana                                                                                                     
+                     expected undefined to deeply equal 2                                                                                            
+                     at assertion:2 in test-script                                                                                                   
+                     inside "TC-01 Crear pedido valido"                                                                                              
+                                                                                                                                                     
+ 2.  AssertionError  TC-02 el cambio quedo guardado                                                                                                  
+                     expected undefined to deeply equal 2                                                                                            
+                     at assertion:1 in test-script                                                                                                   
+                     inside "TC-02 Consultar pedido creado"                                                                                          
+                                                                                                                                                     
+ 3.  AssertionError  TC-13 cada pedido cumple el esquema Order                                                                                       
+                     expected { …(9) } to have keys 'id', 'product', 'quantity', 'note', 'status', 'owner', 'createdAt', 'cancelledAt', and 'events' 
+                     at assertion:2 in test-script                                                                                                   
+                     inside "TC-13 Esquema de exito"                                                                                                 
+                                                                                                                                                     
+ 4.  AssertionError  TC-12 el pedido guardado sigue igual                                                                                            
+                     expected undefined to deeply equal 2                                                                                            
+                     at assertion:0 in test-script                                                                                                   
+                     inside "TC-12 Verificar efecto final"                                                                                           

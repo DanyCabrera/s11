@@ -1,0 +1,25 @@
+$kind: http-request
+name: TC-11 Cancelar primera vez
+method: PUT
+url: '{{base_url}}/orders/{{orderId}}/cancel'
+order: 1000
+headers:
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-11 responde 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("TC-11 cambia el pedido a cancelled una sola vez", function () {
+          const body = pm.response.json();
+          pm.expect(body.id).to.eql(pm.collectionVariables.get("orderId"));
+          pm.expect(body.status).to.eql("cancelled");
+          pm.expect(body.cancelledAt).to.be.a("string").and.not.empty;
+          pm.expect(body.events.map(function (event) { return event.type; })).to.eql(["created", "cancelled"]);
+          pm.collectionVariables.set("cancelledAt", body.cancelledAt);
+          pm.collectionVariables.set("eventCount", String(body.events.length));
+      });

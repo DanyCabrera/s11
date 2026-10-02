@@ -1,0 +1,19 @@
+$kind: http-request
+name: Reiniciar datos
+method: POST
+url: '{{base_url}}/test/reset'
+order: 1000
+headers:
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Preparacion responde 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("Preparacion deja el almacen vacio", function () {
+          pm.expect(pm.response.json().ok).to.eql(true);
+      });

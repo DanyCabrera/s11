@@ -1,0 +1,28 @@
+$kind: http-request
+name: TC-10 Pagina 2
+method: GET
+url: '{{base_url}}/orders?page=2&limit=2'
+order: 4000
+headers:
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-10 responde 200", function () {
+          pm.response.to.have.status(200);
+      });
+
+      pm.test("TC-10 devuelve el pedido restante y no repite la pagina 1", function () {
+          const body = pm.response.json();
+          pm.expect(body.page).to.eql(2);
+          pm.expect(body.limit).to.eql(2);
+          pm.expect(body.total).to.eql(3);
+          pm.expect(body.totalPages).to.eql(2);
+          pm.expect(body.items).to.have.lengthOf(1);
+          pm.expect(body.items[0].product).to.eql("Jugo");
+          pm.expect(body.items[0].owner).to.eql("ana");
+          const page1 = pm.collectionVariables.get("page1Ids").split(",");
+          pm.expect(page1).to.not.include(body.items[0].id);
+      });

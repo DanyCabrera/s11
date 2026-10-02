@@ -1,0 +1,5 @@
+localResources:
+  specs:
+    - ../openapi/pedidos.openapi.yaml
+workspace:
+  id: ''

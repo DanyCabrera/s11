@@ -1,0 +1,25 @@
+$kind: http-request
+name: PRE-09b Crear Jugo
+method: POST
+url: '{{base_url}}/orders'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+body:
+  type: json
+  content: |-
+    {
+      "product": "Jugo",
+      "quantity": 1
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("PRE-09b crea Jugo", function () {
+          pm.response.to.have.status(201);
+          pm.expect(pm.response.json().product).to.eql("Jugo");
+      });

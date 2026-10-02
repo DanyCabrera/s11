@@ -1,0 +1,4 @@
+$kind: collection
+name: 07 Limpieza
+description: Vacía la memoria al terminar la suite.
+order: 8000

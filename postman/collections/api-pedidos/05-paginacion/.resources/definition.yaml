@@ -1,0 +1,4 @@
+$kind: collection
+name: 05 Paginacion
+description: Prepara dos pedidos más y comprueba la página 1 y la página 2. Esos dos POST no son casos de la matriz.
+order: 6000

@@ -1,0 +1,24 @@
+$kind: http-request
+name: TC-07 Recurso ajeno
+method: GET
+url: '{{base_url}}/orders/{{orderId}}'
+order: 1000
+headers:
+  - key: Authorization
+    value: 'Bearer {{token_luis}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-07 responde 403", function () {
+          pm.response.to.have.status(403);
+      });
+
+      pm.test("TC-07 no entrega el pedido de Ana", function () {
+          const body = pm.response.json();
+          pm.expect(body.error.code).to.eql("FORBIDDEN");
+          pm.expect(body.error.details[0].issue).to.eql("not_owner");
+          pm.expect(body).to.not.have.property("product");
+          pm.expect(body).to.not.have.property("owner");
+          pm.expect(JSON.stringify(body)).to.not.include("Cafe");
+      });

@@ -1,0 +1,4 @@
+$kind: collection
+name: 00 Preparacion
+description: Vacía la memoria para no depender de ids de otra ejecución.
+order: 1000

@@ -1,0 +1,4 @@
+$kind: collection
+name: 01 Crear y verificar
+description: TC-01 crea, TC-02 comprueba el cambio guardado y TC-13 valida el esquema de éxito.
+order: 2000

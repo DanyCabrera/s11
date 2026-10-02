@@ -1,0 +1,10 @@
+{
+  "name": "api-pedidos",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API pequeña de pedidos para validar el contrato OpenAPI con Postman",
+  "scripts": {
+    "start": "node src/server.js",
+    "test:api": "postman collection run postman/collections/api-pedidos -e postman/environments/local.environment.yaml --no-report-events --disable-unicode"
+  }
+}

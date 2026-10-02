@@ -1,0 +1,4 @@
+$kind: collection
+name: 02 Datos invalidos
+description: TC-03 campo obligatorio, TC-04 valor fuera de rango y TC-14 esquema del error.
+order: 3000

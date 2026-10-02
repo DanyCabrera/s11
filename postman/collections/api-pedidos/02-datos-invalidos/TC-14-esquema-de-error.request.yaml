@@ -1,0 +1,55 @@
+$kind: http-request
+name: TC-14 Esquema de error
+method: POST
+url: '{{base_url}}/orders'
+order: 3000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+body:
+  type: json
+  content: |-
+    {
+      "product": "Cafe",
+      "quantity": "dos"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-14 responde 400 y JSON", function () {
+          pm.response.to.have.status(400);
+          pm.expect(pm.response.headers.get("Content-Type")).to.match(/application\/json/);
+      });
+
+      pm.test("TC-14 el error cumple el esquema ErrorResponse", function () {
+          const body = pm.response.json();
+          pm.expect(body).to.have.all.keys("error");
+          pm.expect(body.error).to.have.all.keys("code", "message", "details");
+          pm.expect(body.error.code).to.eql("VALIDATION_ERROR");
+          pm.expect(body.error.message).to.be.a("string").and.not.empty;
+          pm.expect(body.error.details).to.be.an("array").that.is.not.empty;
+          body.error.details.forEach(function (detail) {
+              pm.expect(detail).to.have.all.keys("field", "issue");
+              pm.expect(detail.field).to.be.a("string").and.not.empty;
+              pm.expect(detail.issue).to.be.a("string").and.not.empty;
+          });
+          const quantity = body.error.details.find(function (item) { return item.field === "quantity"; });
+          pm.expect(quantity.issue).to.eql("must_be_integer");
+      });
+
+      pm.sendRequest({
+          url: pm.variables.get("base_url") + "/orders?page=1&limit=10",
+          method: "GET",
+          header: {
+              Authorization: "Bearer " + pm.variables.get("token_ana")
+          }
+      }, function (err, res) {
+          pm.test("TC-14 no guarda un pedido", function () {
+              pm.expect(err).to.eql(null);
+              pm.expect(res.code).to.eql(200);
+              pm.expect(res.json().total).to.eql(1);
+          });
+      });

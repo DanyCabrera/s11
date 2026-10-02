@@ -1,0 +1,19 @@
+$kind: collection
+name: API de pedidos
+description: |-
+  Casos TC-01 a TC-14 de docs/matriz-pruebas.md.
+  Requiere el ambiente Local y el servidor en http://localhost:3000.
+  La primera solicitud vacía la memoria. Los ids se crean en esta ejecución.
+variables:
+  - key: orderId
+    value: ''
+    description: Id creado por TC-01. No se reutiliza de otra corrida.
+  - key: cancelledAt
+    value: ''
+    description: Marca de la primera cancelación, para comparar el efecto de TC-12.
+  - key: eventCount
+    value: ''
+    description: Cantidad de eventos tras la primera cancelación.
+  - key: page1Ids
+    value: ''
+    description: Ids de la página 1, para comprobar que la página 2 no los repite.

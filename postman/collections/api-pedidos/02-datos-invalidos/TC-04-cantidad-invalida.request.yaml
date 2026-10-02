@@ -1,0 +1,47 @@
+$kind: http-request
+name: TC-04 Cantidad invalida
+method: POST
+url: '{{base_url}}/orders'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+body:
+  type: json
+  content: |-
+    {
+      "product": "Cafe",
+      "quantity": 0
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-04 responde 400", function () {
+          pm.response.to.have.status(400);
+      });
+
+      pm.test("TC-04 rechaza quantity fuera de rango", function () {
+          const body = pm.response.json();
+          pm.expect(body.error.code).to.eql("VALIDATION_ERROR");
+          const quantity = body.error.details.find(function (item) { return item.field === "quantity"; });
+          pm.expect(quantity).to.be.an("object");
+          pm.expect(quantity.issue).to.eql("must_be_between_1_and_100");
+          pm.expect(body).to.not.have.property("id");
+      });
+
+      pm.sendRequest({
+          url: pm.variables.get("base_url") + "/orders?page=1&limit=10",
+          method: "GET",
+          header: {
+              Authorization: "Bearer " + pm.variables.get("token_ana")
+          }
+      }, function (err, res) {
+          pm.test("TC-04 no guarda un pedido", function () {
+              pm.expect(err).to.eql(null);
+              pm.expect(res.code).to.eql(200);
+              pm.expect(res.json().total).to.eql(1);
+          });
+      });

@@ -1,0 +1,31 @@
+$kind: http-request
+name: Limpiar datos
+method: POST
+url: '{{base_url}}/test/reset'
+order: 1000
+headers:
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Limpieza responde 200", function () {
+          pm.response.to.have.status(200);
+          pm.expect(pm.response.json().ok).to.eql(true);
+      });
+
+      pm.sendRequest({
+          url: pm.variables.get("base_url") + "/orders?page=1&limit=10",
+          method: "GET",
+          header: {
+              Authorization: "Bearer " + pm.variables.get("token_ana")
+          }
+      }, function (err, res) {
+          pm.test("Limpieza deja cero pedidos", function () {
+              pm.expect(err).to.eql(null);
+              pm.expect(res.code).to.eql(200);
+              pm.expect(res.json().total).to.eql(0);
+              pm.expect(res.json().items).to.eql([]);
+          });
+      });

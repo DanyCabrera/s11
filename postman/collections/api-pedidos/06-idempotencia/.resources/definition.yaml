@@ -1,0 +1,4 @@
+$kind: collection
+name: 06 Idempotencia
+description: TC-11 cancela una vez. TC-12 repite la cancelación y lee el pedido para ver el efecto final.
+order: 7000

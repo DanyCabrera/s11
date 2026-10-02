@@ -1,0 +1,23 @@
+$kind: http-request
+name: TC-06 Token invalido
+method: GET
+url: '{{base_url}}/orders'
+order: 2000
+headers:
+  - key: Authorization
+    value: 'Bearer token-que-no-existe'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-06 responde 401", function () {
+          pm.response.to.have.status(401);
+      });
+
+      pm.test("TC-06 rechaza el token desconocido", function () {
+          const body = pm.response.json();
+          pm.expect(body.error.code).to.eql("UNAUTHORIZED");
+          pm.expect(body.error.details[0].field).to.eql("Authorization");
+          pm.expect(body.error.details[0].issue).to.eql("invalid");
+          pm.expect(body).to.not.have.property("items");
+      });

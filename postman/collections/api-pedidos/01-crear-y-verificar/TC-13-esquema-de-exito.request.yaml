@@ -1,0 +1,53 @@
+$kind: http-request
+name: TC-13 Esquema de exito
+method: GET
+url: '{{base_url}}/orders?page=1&limit=10'
+order: 3000
+headers:
+  - key: Authorization
+    value: 'Bearer {{token_ana}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("TC-13 responde 200 y JSON", function () {
+          pm.response.to.have.status(200);
+          pm.expect(pm.response.headers.get("Content-Type")).to.match(/application\/json/);
+      });
+
+      pm.test("TC-13 la pagina cumple el esquema OrderPage", function () {
+          const body = pm.response.json();
+          pm.expect(body).to.have.all.keys("page", "limit", "total", "totalPages", "items");
+          pm.expect(body.page).to.be.a("number");
+          pm.expect(body.limit).to.be.a("number");
+          pm.expect(body.total).to.eql(1);
+          pm.expect(body.totalPages).to.eql(1);
+          pm.expect(body.items).to.be.an("array").with.lengthOf(1);
+      });
+
+      pm.test("TC-13 cada pedido cumple el esquema Order", function () {
+          const order = pm.response.json().items[0];
+          pm.expect(order).to.have.all.keys(
+              "id",
+              "product",
+              "quantity",
+              "note",
+              "status",
+              "owner",
+              "createdAt",
+              "cancelledAt",
+              "events"
+          );
+          pm.expect(order.id).to.be.a("string");
+          pm.expect(order.product).to.be.a("string");
+          pm.expect(order.quantity).to.be.a("number");
+          pm.expect(order.note).to.be.a("string");
+          pm.expect(order.status).to.be.oneOf(["pending", "cancelled"]);
+          pm.expect(order.owner).to.be.oneOf(["ana", "luis"]);
+          pm.expect(order.createdAt).to.match(/^\d{4}-\d{2}-\d{2}T/);
+          pm.expect(order.cancelledAt).to.eql(null);
+          pm.expect(order.events).to.be.an("array").with.lengthOf(1);
+          pm.expect(order.events[0]).to.have.all.keys("type", "at");
+          pm.expect(order.events[0].type).to.eql("created");
+          pm.expect(order.events[0].at).to.be.a("string");
+      });
